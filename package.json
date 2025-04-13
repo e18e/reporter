@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "type": "module",
   "description": "The official e18e umbrella reporting library/CLI",
-  "bin": "./lib/cli-missing.js",
+  "bin": {
+    "e18e-report": "cli.js"
+  },
   "exports": "./lib/index.js",
   "imports": {
     "#detect-and-pack": {
@@ -45,11 +47,12 @@
   "homepage": "https://github.com/e18e/reporter#readme",
   "dependencies": {
     "@arethetypeswrong/core": "^0.17.4",
+    "@clack/prompts": "https://pkg.pr.new/bombshell-dev/clack/@clack/prompts@276",
     "@publint/pack": "^0.1.2",
+    "gunshi": "^0.14.3",
     "package-manager-detector": "^1.1.0",
     "picocolors": "^1.1.1",
-    "publint": "^0.3.9",
-    "sade": "^1.8.1"
+    "publint": "^0.3.9"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

@@ -3,9 +3,17 @@ export interface PackFile {
   data: string | ArrayBuffer | Uint8Array;
 }
 
+export type PackType =
+  | 'auto'
+  | 'npm'
+  | 'yarn'
+  | 'pnpm'
+  | 'bun'
+  | {tarball: ArrayBuffer};
+
 export interface Options {
   root?: string;
-  pack?: 'auto' | 'npm' | 'yarn' | 'pnpm' | 'bun' | {tarball: ArrayBuffer};
+  pack?: PackType;
 }
 
 export interface Message {
