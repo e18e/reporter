@@ -8,19 +8,19 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "browser": "./lib/index-browser.js",
+      "types": "./lib/index.d.ts",
+      "browser": "./lib/index.js",
       "default": "./lib/index.js"
     }
   },
   "imports": {
     "#detect-and-pack": {
-      "types": "./src/detect-and-pack-node.ts",
+      "types": "./lib/detect-and-pack-node.d.ts",
       "browser": "./lib/detect-and-pack-browser.js",
       "default": "./lib/detect-and-pack-node.js"
     },
     "#analyze-dependencies": {
-      "types": "./src/analyze-dependencies-node.ts",
+      "types": "./lib/analyze-dependencies-node.d.ts",
       "browser": "./lib/analyze-dependencies-browser.js",
       "default": "./lib/analyze-dependencies-node.js"
     }
