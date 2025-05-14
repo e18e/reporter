@@ -1,5 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {LocalDependencyAnalyzer} from '../analyze-dependencies.js';
+import type {DependencyAnalyzer} from '../types.js';
 import {
   createTempDir,
   cleanupTempDir,
@@ -12,7 +13,7 @@ import path from 'node:path';
 
 describe('LocalDependencyAnalyzer', () => {
   let tempDir: string;
-  let analyzer: LocalDependencyAnalyzer;
+  let analyzer: DependencyAnalyzer;
 
   beforeEach(async () => {
     tempDir = await createTempDir();

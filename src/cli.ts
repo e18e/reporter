@@ -7,146 +7,155 @@ import {report} from './index.js';
 import type {Message, PackType} from './types.js';
 import {LocalDependencyAnalyzer} from './analyze-dependencies.js';
 
-// This is required if you want to display the list of files in the tarball
-// eslint-disable-next-line no-var
-declare global {
-  // eslint-disable-next-line no-var
-  var lastTarballFiles: string[] | undefined;
-}
-
 const version = createRequire(import.meta.url)('../package.json').version;
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
 
-const defaultCommand = define({
-  options: {
-    pack: {
-      type: 'string',
-      default: 'auto',
-      description: `Package manager to use for packing ('auto' | 'npm' | 'yarn' | 'pnpm' | 'bun')`
-    }
-  },
-  async run(ctx) {
-    const root = ctx.positionals[0];
-    let pack = ctx.values.pack as PackType;
-
-    prompts.intro('Generating report...');
-
-    if (typeof pack === 'string' && !allowedPackTypes.includes(pack)) {
-      prompts.cancel(
-        `Invalid '--pack' option. Allowed values are: ${allowedPackTypes.join(', ')}`
-      );
-      process.exit(1);
-    }
-
-    // If a path is passed, see if it's a path to a file (likely the tarball file)
-    if (root) {
-      const stat = await fs.stat(root).catch(() => {});
-      const isTarballFilePassed = stat?.isFile() === true;
-      if (!isTarballFilePassed) {
-        prompts.cancel(
-          `When '--pack file' is used, a path to a tarball file must be passed.`
-        );
-        process.exit(1);
-      }
-      pack = {tarball: (await fs.readFile(root)).buffer};
-    }
-
-    const packageDir = root || process.cwd();
-
-    // First analyze local dependencies
-    const localAnalyzer = new LocalDependencyAnalyzer();
-    const localStats = await localAnalyzer.analyzeDependencies(packageDir);
-
-    prompts.log.info('Local Analysis');
-    prompts.log.message(
-      `${c.dim('Total deps    ')}  ${localStats.totalDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      `${c.dim('Direct deps   ')}  ${localStats.directDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      `${c.dim('Dev deps      ')}  ${localStats.devDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      `${c.dim('CJS deps      ')}  ${localStats.cjsDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      `${c.dim('ESM deps      ')}  ${localStats.esmDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      `${c.dim('Install size  ')}  ${formatBytes(localStats.installSize)}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      c.gray(
-        '(Dependency type analysis is based on your installed node_modules.)'
-      ),
-      {spacing: 1}
-    );
-    prompts.log.message('', {spacing: 0});
-
-    // Then analyze the tarball
-    const {messages, dependencies} = await report({root: packageDir, pack});
-
-    // Information about which files are included in the tarball, which can be useful for debugging
-    // This can be commented if we don't require this level of detail
-    // Show files in tarball (styled)
-    if (Array.isArray(globalThis.lastTarballFiles)) {
-      prompts.log.info(c.white('Files in tarball:'), {spacing: 0});
-      for (const file of globalThis.lastTarballFiles) {
-        prompts.log.message(c.gray(`  - ${file}`), {spacing: 0});
-      }
-      prompts.log.message('', {spacing: 0});
-    }
-
-    prompts.log.info('Tarball Analysis');
-    prompts.log.message(
-      `${c.dim('Total deps    ')}  ${dependencies.totalDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      `${c.dim('Direct deps   ')}  ${dependencies.directDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      `${c.dim('Dev deps      ')}  ${dependencies.devDependencies}`,
-      {spacing: 0}
-    );
-    prompts.log.message(`${c.dim('CJS deps      ')}  N/A`, {spacing: 0});
-    prompts.log.message(`${c.dim('ESM deps      ')}  N/A`, {spacing: 0});
-    prompts.log.message(
-      `${c.dim('Install size  ')}  ${formatBytes(dependencies.installSize)}`,
-      {spacing: 0}
-    );
-    prompts.log.message(
-      c.gray(
-        'Dependency type analysis is only available for local analysis, as tarballs do not include dependencies.'
-      ),
-      {spacing: 1}
-    );
-
-    prompts.log.info('Package report');
-
-    if (messages.length === 0) {
-      prompts.outro('All good!');
-    } else {
-      outputMessages(messages);
-      prompts.outro('Report found some issues.');
-      process.exitCode = 1;
-    }
+export async function runCli(args: string[]) {
+  if (typeof window !== 'undefined') {
+    throw new Error('Local dependency analysis is not supported in the browser');
   }
-});
 
-await cli(process.argv.slice(2), defaultCommand, {
-  name: 'e18e-report',
-  version,
-  description: 'Generate a performance report for your package.'
-});
+  const defaultCommand = define({
+    options: {
+      pack: {
+        type: 'string',
+        default: 'auto',
+        description: `Package manager to use for packing ('auto' | 'npm' | 'yarn' | 'pnpm' | 'bun')`
+      },
+      'list-tarball-files': {
+        type: 'boolean',
+        default: false,
+        description: 'List all files in the tarball',
+      }
+    },
+    async run(ctx) {
+      const root = ctx.positionals[0];
+      let pack = ctx.values.pack as PackType;
+      const showAllFiles = ctx.values['list-tarball-files'] as boolean;
+
+      prompts.intro('Generating report...');
+
+      if (typeof pack === 'string' && !allowedPackTypes.includes(pack)) {
+        prompts.cancel(
+          `Invalid '--pack' option. Allowed values are: ${allowedPackTypes.join(', ')}`
+        );
+        throw new Error('Invalid --pack option');
+      }
+
+      // If a path is passed, see if it's a path to a file (likely the tarball file)
+      if (root) {
+        const stat = await fs.stat(root).catch(() => {});
+        const isTarballFilePassed = stat?.isFile() === true;
+        if (!isTarballFilePassed) {
+          prompts.cancel(
+            `When '--pack file' is used, a path to a tarball file must be passed.`
+          );
+          throw new Error('When --pack file is used, a path to a tarball file must be passed.');
+        }
+        pack = {tarball: (await fs.readFile(root)).buffer};
+      }
+
+      const packageDir = root || process.cwd();
+
+      // First analyze local dependencies
+      const localAnalyzer = new LocalDependencyAnalyzer();
+      const localStats = await localAnalyzer.analyzeDependencies(packageDir);
+
+      prompts.log.info('Local Analysis');
+      prompts.log.message(
+        `${c.cyan('Total deps    ')}  ${localStats.totalDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        `${c.cyan('Direct deps   ')}  ${localStats.directDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        `${c.cyan('Dev deps      ')}  ${localStats.devDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        `${c.cyan('CJS deps      ')}  ${localStats.cjsDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        `${c.cyan('ESM deps      ')}  ${localStats.esmDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        `${c.cyan('Install size  ')}  ${formatBytes(localStats.installSize)}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        c.yellowBright(
+          'Dependency type analysis is based on your installed node_modules.'
+        ),
+        {spacing: 1}
+      );
+      prompts.log.message('', {spacing: 0});
+
+      // Then analyze the tarball
+      const {messages, dependencies} = await report({root: packageDir, pack});
+
+      // Show files in tarball (styled) only if requested
+      if (showAllFiles && Array.isArray(dependencies.tarballFiles)) {
+        prompts.log.info(c.white('Files in tarball:'), {spacing: 0});
+        for (const file of dependencies.tarballFiles) {
+          prompts.log.message(c.gray(`  - ${file}`), {spacing: 0});
+        }
+        prompts.log.message('', {spacing: 1});
+      }
+
+      prompts.log.info('Tarball Analysis');
+      prompts.log.message(
+        `${c.cyan('Total deps    ')}  ${dependencies.totalDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        `${c.cyan('Direct deps   ')}  ${dependencies.directDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        `${c.cyan('Dev deps      ')}  ${dependencies.devDependencies}`,
+        {spacing: 0}
+      );
+      prompts.log.message(`${c.cyan('CJS deps      ')}  N/A`, {spacing: 0});
+      prompts.log.message(`${c.cyan('ESM deps      ')}  N/A`, {spacing: 0});
+      prompts.log.message(
+        `${c.cyan('Install size  ')}  ${formatBytes(dependencies.installSize)}`,
+        {spacing: 0}
+      );
+      prompts.log.message(
+        c.yellowBright(
+          'Dependency type analysis is only available for local analysis, as tarballs do not include dependencies.'
+        ),
+        {spacing: 1}
+      );
+
+      prompts.log.info('Package report');
+
+      if (messages.length === 0) {
+        prompts.outro('All good!');
+      } else {
+        outputMessages(messages);
+        prompts.outro('Report found some issues.');
+        throw new Error('Report found some issues.');
+      }
+    }
+  });
+
+  await cli(args, defaultCommand, {
+    name: 'e18e-report',
+    version,
+    description: 'Generate a performance report for your package.'
+  });
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runCli(process.argv.slice(2)).catch(() => {
+    process.exit(1);
+  });
+}
 
 function outputMessages(messages: Message[]) {
   const errors = messages.filter((v) => v.severity === 'error');
