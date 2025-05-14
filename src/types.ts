@@ -61,6 +61,8 @@ export interface DependencyStats {
   esmDependencies: number;
   installSize: number;
   tarballFiles?: string[];
+  packageName?: string;
+  version?: string;
 }
 
 export interface DependencyAnalyzer {

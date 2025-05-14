@@ -69,7 +69,9 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
         devDependencies,
         cjsDependencies,
         esmDependencies,
-        installSize
+        installSize,
+        packageName: pkgJson.name,
+        version: pkgJson.version
       };
     } catch {
       logger.error('Error analyzing dependencies');
@@ -245,6 +247,8 @@ export async function analyzeDependencies(
     cjsDependencies,
     esmDependencies,
     installSize,
+    packageName: pkg.name,
+    version: pkg.version,
     tarballFiles: files.map((f) => f.name)
   };
 } 

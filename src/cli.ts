@@ -94,6 +94,12 @@ export async function runCli(args: string[]) {
       );
       prompts.log.message('', {spacing: 0});
 
+      // Display package info
+      prompts.log.info('Package info');
+      prompts.log.message(`${c.cyan('Name   ')}  ${localStats.packageName}`, {spacing: 0});
+      prompts.log.message(`${c.cyan('Version')}  ${localStats.version}`, {spacing: 0});
+      prompts.log.message('', {spacing: 0});
+
       // Then analyze the tarball
       const {messages, dependencies} = await report({root: packageDir, pack});
 
