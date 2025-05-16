@@ -1,6 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {LocalDependencyAnalyzer} from '../analyze-dependencies.js';
-import type {DependencyAnalyzer} from '../types.js';
 import {
   createTempDir,
   cleanupTempDir,
@@ -13,7 +12,7 @@ import path from 'node:path';
 
 describe('LocalDependencyAnalyzer', () => {
   let tempDir: string;
-  let analyzer: DependencyAnalyzer;
+  let analyzer: LocalDependencyAnalyzer;
 
   beforeEach(async () => {
     tempDir = await createTempDir();
@@ -37,7 +36,9 @@ describe('LocalDependencyAnalyzer', () => {
       devDependencies: 0,
       cjsDependencies: 0,
       esmDependencies: 0,
-      installSize: 0
+      installSize: 0,
+      packageName: 'test-package',
+      version: '1.0.0'
     });
   });
 
@@ -87,7 +88,9 @@ describe('LocalDependencyAnalyzer', () => {
       devDependencies: 1,
       cjsDependencies: 2, // cjs-package and dev-package
       esmDependencies: 1, // esm-package
-      installSize: expect.any(Number) // Size will vary based on file system
+      installSize: expect.any(Number),
+      packageName: 'test-package',
+      version: '1.0.0'
     });
   });
 
@@ -128,7 +131,9 @@ describe('LocalDependencyAnalyzer', () => {
       devDependencies: 0,
       cjsDependencies: 0,
       esmDependencies: 1,
-      installSize: expect.any(Number)
+      installSize: expect.any(Number),
+      packageName: 'test-package',
+      version: '1.0.0'
     });
   });
 
@@ -148,7 +153,9 @@ describe('LocalDependencyAnalyzer', () => {
       devDependencies: 0,
       cjsDependencies: 0,
       esmDependencies: 0,
-      installSize: 0
+      installSize: 0,
+      packageName: 'test-package',
+      version: '1.0.0'
     });
   });
 });

@@ -4,7 +4,7 @@
   "type": "module",
   "description": "The official e18e umbrella reporting library/CLI",
   "bin": {
-    "e18e-report": "cli.js"
+    "e18e-report": "lib/cli.js"
   },
   "exports": {
     ".": {
