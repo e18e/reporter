@@ -7,6 +7,8 @@ export default defineConfig({
     reporters: 'dot',
     include: [
       'packages/**/*.test.ts',
+      'src/**/*.test.ts',
+      'test/**/*.test.ts'
     ]
   }
 })

@@ -12,6 +12,10 @@ import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
 import {unpack} from '@publint/pack';
 import {analyzePackageModuleType} from './compute-type.js';
 import type {PackageModuleType} from './compute-type.js';
+import {
+  analyzeDependencies,
+  type DependencyStats
+} from './analyze-dependencies.js';
 
 export type {Message, Options, PackageModuleType};
 
@@ -22,6 +26,7 @@ export interface ReportResult {
     type: PackageModuleType;
   };
   messages: Message[];
+  dependencies: DependencyStats;
 }
 
 export async function report(options: Options) {
@@ -35,13 +40,13 @@ export async function report(options: Options) {
   }
 
   const info = await computeInfo(tarball);
-
+  const dependencies = await analyzeDependencies(tarball);
   const attwResult = await runAttw(tarball);
   const publintResult = await runPublint(tarball);
 
   const messages = [...attwResult, ...publintResult];
 
-  return {info, messages};
+  return {info, messages, dependencies};
 }
 
 async function computeInfo(tarball: ArrayBuffer) {
