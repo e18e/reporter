@@ -46,17 +46,21 @@ const defaultCommand = define({
           const buffer = await fs.readFile(root);
           pack = {tarball: buffer.buffer};
           isTarball = true;
-        } else if (!stat.isDirectory()) {
+        } else if (stat.isDirectory()) {
+          // It's a directory, which is fine
+          isTarball = false;
+        } else {
+          // It's neither a file nor a directory (e.g., symlink, socket, etc.)
           prompts.cancel(
-            `When '--pack file' is used, a path to a tarball file must be passed.`
+            `Path must be either a file (tarball) or a directory.`
           );
-          throw new Error('When --pack file is used, a path to a tarball file must be passed.');
+          process.exit(1);
         }
       } catch (error) {
         prompts.cancel(
-          `Failed to read tarball file: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to read path: ${error instanceof Error ? error.message : String(error)}`
         );
-        throw error;
+        process.exit(1);
       }
     }
 

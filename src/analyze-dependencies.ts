@@ -175,37 +175,6 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
   }
 }
 
-export class RemoteDependencyAnalyzer implements DependencyAnalyzer {
-  async analyzeDependencies(root: string): Promise<DependencyStats> {
-    const pkgJsonPath = path.join(root, 'package.json');
-    const pkgJson = JSON.parse(await fs.readFile(pkgJsonPath, 'utf-8'));
-
-    // Count direct dependencies
-    const directDependencies = Object.keys(pkgJson.dependencies || {}).length;
-    const devDependencies = Object.keys(pkgJson.devDependencies || {}).length;
-
-    // Analyze dependencies from npm registry
-    const cjsDependencies = 0;
-    const esmDependencies = 0;
-    const installSize = 0;
-
-    // TODO: Implement npm registry fetching
-    // For each dependency:
-    // 1. Fetch package metadata from registry
-    // 2. Analyze module type
-    // 3. Fetch tarball and calculate size
-
-    return {
-      totalDependencies: directDependencies + devDependencies,
-      directDependencies,
-      devDependencies,
-      cjsDependencies,
-      esmDependencies,
-      installSize
-    };
-  }
-}
-
 // Keep the existing tarball analysis for backward compatibility
 export async function analyzeDependencies(
   tarball: ArrayBuffer

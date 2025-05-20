@@ -4,7 +4,7 @@
   "type": "module",
   "description": "The official e18e umbrella reporting library/CLI",
   "bin": {
-    "e18e-report": "lib/cli.js"
+    "e18e-report": "cli.js"
   },
   "exports": {
     ".": {
@@ -18,11 +18,6 @@
       "types": "./lib/detect-and-pack-node.d.ts",
       "browser": "./lib/detect-and-pack-browser.js",
       "default": "./lib/detect-and-pack-node.js"
-    },
-    "#analyze-dependencies": {
-      "types": "./lib/analyze-dependencies-node.d.ts",
-      "browser": "./lib/analyze-dependencies-browser.js",
-      "default": "./lib/analyze-dependencies-node.js"
     }
   },
   "files": [
