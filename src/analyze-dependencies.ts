@@ -3,22 +3,32 @@ import fsSync from 'node:fs';
 import path from 'node:path';
 import {unpack} from '@publint/pack';
 import {analyzePackageModuleType} from './compute-type.js';
-import { logger } from './logger.js';
+import { pino } from 'pino';
 import type {DependencyStats, DependencyAnalyzer} from './types.js';
+
+// Create a logger instance with pretty printing for development
+const logger = pino({
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'SYS:standard',
+      ignore: 'pid,hostname',
+    },
+  },
+});
 
 /**
  * This file contains dependency analysis functionality.
  * 
  * To enable debug logging for dependency analysis:
  * ```typescript
- * import { logger } from './logger.js';
- * 
  * // Enable all debug logs
- * logger.setOptions({ enabled: true, level: 'debug' });
+ * logger.level = 'debug';
  * 
  * // Or create a specific logger for dependency analysis
- * const analyzerLogger = logger.child('analyzer');
- * analyzerLogger.setOptions({ enabled: true, level: 'debug' });
+ * const analyzerLogger = logger.child({ module: 'analyzer' });
+ * analyzerLogger.level = 'debug';
  * ```
  */
 

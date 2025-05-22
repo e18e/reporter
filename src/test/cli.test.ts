@@ -83,8 +83,8 @@ describe('CLI', () => {
     expect(stdout).toContain('Tarball Analysis');
   });
 
-  it('should show tarball files when --list-tarball-files is used', async () => {
-    const {stdout, stderr, code} = await runCliProcess([mockTarballPath, '--list-tarball-files'], tempDir);
+  it('should show tarball files when --log-level=debug is used', async () => {
+    const {stdout, stderr, code} = await runCliProcess([mockTarballPath, '--log-level=debug'], tempDir);
     if (code !== 0) {
       console.error('CLI Error:', stderr);
     }

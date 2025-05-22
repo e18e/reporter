@@ -6,9 +6,22 @@ import c from 'picocolors';
 import {report} from './index.js';
 import type {PackType} from './types.js';
 import {LocalDependencyAnalyzer} from './analyze-dependencies.js';
+import { pino } from 'pino';
 
 const version = createRequire(import.meta.url)('../package.json').version;
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
+
+// Create a logger instance with pretty printing for development
+const logger = pino({
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'SYS:standard',
+      ignore: 'pid,hostname',
+    },
+  },
+});
 
 const defaultCommand = define({
   options: {
@@ -17,16 +30,19 @@ const defaultCommand = define({
       default: 'auto',
       description: `Package manager to use for packing ('auto' | 'npm' | 'yarn' | 'pnpm' | 'bun')`
     },
-    'list-tarball-files': {
-      type: 'boolean',
-      default: false,
-      description: 'List all files in the tarball',
+    'log-level': {
+      type: 'string',
+      default: 'info',
+      description: 'Set the log level (debug | info | warn | error)'
     }
   },
   async run(ctx) {
     const root = ctx.positionals[0];
     let pack = ctx.values.pack as PackType;
-    const showAllFiles = ctx.values['list-tarball-files'] as boolean;
+    const logLevel = ctx.values['log-level'] as string;
+
+    // Set the logger level based on the option
+    logger.level = logLevel;
 
     prompts.intro('Generating report...');
 
@@ -34,10 +50,10 @@ const defaultCommand = define({
       prompts.cancel(
         `Invalid '--pack' option. Allowed values are: ${allowedPackTypes.join(', ')}`
       );
-      throw new Error('Invalid --pack option');
+      process.exit(1);
     }
 
-    // If a path is passed, see if it's a path to a file (likely the tarball file)
+    // If a path is passed, it must be a tarball file
     let isTarball = false;
     if (root) {
       try {
@@ -46,19 +62,16 @@ const defaultCommand = define({
           const buffer = await fs.readFile(root);
           pack = {tarball: buffer.buffer};
           isTarball = true;
-        } else if (stat.isDirectory()) {
-          // It's a directory, which is fine
-          isTarball = false;
         } else {
-          // It's neither a file nor a directory (e.g., symlink, socket, etc.)
+          // Not a file, exit
           prompts.cancel(
-            `Path must be either a file (tarball) or a directory.`
+            `Path must be a tarball file.`
           );
           process.exit(1);
         }
       } catch (error) {
         prompts.cancel(
-          `Failed to read path: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to read tarball file: ${error instanceof Error ? error.message : String(error)}`
         );
         process.exit(1);
       }
@@ -114,13 +127,12 @@ const defaultCommand = define({
     // Then analyze the tarball
     const {dependencies} = await report({root: packageDir, pack});
 
-    // Show files in tarball (styled) only if requested
-    if (showAllFiles && Array.isArray(dependencies.tarballFiles)) {
-      prompts.log.info(c.white('Files in tarball:'), {spacing: 0});
+    // Show files in tarball as debug output
+    if (Array.isArray(dependencies.tarballFiles)) {
+      logger.debug('Files in tarball:');
       for (const file of dependencies.tarballFiles) {
-        prompts.log.message(c.gray(`  - ${file}`), {spacing: 0});
+        logger.debug(`  - ${file}`);
       }
-      prompts.log.message('', {spacing: 1});
     }
 
     prompts.log.info('Tarball Analysis');

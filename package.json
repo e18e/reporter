@@ -58,6 +58,8 @@
     "gunshi": "^0.14.3",
     "package-manager-detector": "^1.1.0",
     "picocolors": "^1.1.1",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
     "publint": "^0.3.9"
   },
   "devDependencies": {

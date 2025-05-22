@@ -22,37 +22,6 @@ export interface Message {
   message: string;
 }
 
-// Logger Types
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
-export type ColorHex = `#${string}`;
-
-export interface LoggerOptions {
-  enabled: boolean;
-  level: LogLevel;
-  prefix?: string;
-  timestamp?: boolean;
-  colors?: boolean;
-}
-
-export interface LoggerColors {
-  debug: ColorHex;
-  info: ColorHex;
-  warn: ColorHex;
-  error: ColorHex;
-  reset: ColorHex;
-}
-
-export type LogArgs = unknown[];
-
-export interface FormattedLogParts {
-  timestamp?: string;
-  prefix?: string;
-  level: string;
-  colorStyle?: string;
-  args: LogArgs;
-}
-
 export interface DependencyStats {
   totalDependencies: number;
   directDependencies: number;
