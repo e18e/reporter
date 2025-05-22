@@ -21,3 +21,19 @@ export interface Message {
   score: number;
   message: string;
 }
+
+export interface DependencyStats {
+  totalDependencies: number;
+  directDependencies: number;
+  devDependencies: number;
+  cjsDependencies: number;
+  esmDependencies: number;
+  installSize: number;
+  tarballFiles?: string[];
+  packageName?: string;
+  version?: string;
+}
+
+export interface DependencyAnalyzer {
+  analyzeDependencies(root?: string): Promise<DependencyStats>;
+}

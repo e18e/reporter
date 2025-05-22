@@ -6,10 +6,16 @@
   "bin": {
     "e18e-report": "cli.js"
   },
-  "exports": "./lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "browser": "./lib/index.js",
+      "default": "./lib/index.js"
+    }
+  },
   "imports": {
     "#detect-and-pack": {
-      "types": "./src/detect-and-pack-node.ts",
+      "types": "./lib/detect-and-pack-node.d.ts",
       "browser": "./lib/detect-and-pack-browser.js",
       "default": "./lib/detect-and-pack-node.js"
     }
@@ -52,6 +58,8 @@
     "gunshi": "^0.14.3",
     "package-manager-detector": "^1.1.0",
     "picocolors": "^1.1.1",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
     "publint": "^0.3.9"
   },
   "devDependencies": {
