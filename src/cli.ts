@@ -39,7 +39,7 @@ const defaultCommand = define({
   async run(ctx) {
     const root = ctx.positionals[0];
     let pack = ctx.values.pack as PackType;
-    const logLevel = ctx.values['log-level'] as string;
+    const logLevel = ctx.values['log-level'];
 
     // Set the logger level based on the option
     logger.level = logLevel;
@@ -65,7 +65,7 @@ const defaultCommand = define({
         } else {
           // Not a file, exit
           prompts.cancel(
-            `Path must be a tarball file.`
+            `When '--pack file' is used, a path to a tarball file must be passed.`
           );
           process.exit(1);
         }
@@ -77,12 +77,11 @@ const defaultCommand = define({
       }
     }
 
-    const packageDir = root || process.cwd();
-
     // Only run local analysis if the root is not a tarball file
     if (!isTarball) {
+      const resolvedRoot = root || process.cwd();
       const localAnalyzer = new LocalDependencyAnalyzer();
-      const localStats = await localAnalyzer.analyzeDependencies(packageDir);
+      const localStats = await localAnalyzer.analyzeDependencies(resolvedRoot);
 
       prompts.log.info('Local Analysis');
       prompts.log.message(
@@ -125,7 +124,7 @@ const defaultCommand = define({
     }
 
     // Then analyze the tarball
-    const {dependencies} = await report({root: packageDir, pack});
+    const {dependencies} = await report({root, pack});
 
     // Show files in tarball as debug output
     if (Array.isArray(dependencies.tarballFiles)) {
