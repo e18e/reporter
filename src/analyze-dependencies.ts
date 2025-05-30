@@ -5,6 +5,7 @@ import {unpack} from '@publint/pack';
 import {analyzePackageModuleType} from './compute-type.js';
 import { pino } from 'pino';
 import type {DependencyStats, DependencyAnalyzer} from './types.js';
+import { fdir } from 'fdir';
 
 // Create a logger instance with pretty printing for development
 const logger = pino({
@@ -117,70 +118,39 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
     seenPackages = new Set<string>()
   ) {
     try {
-      const entries = await fs.readdir(dir, {withFileTypes: true});
+      const crawler = new fdir()
+        .withFullPaths()
+        .withSymlinks()
+        .filter((filePath) => {
+          // Skip node_modules directories to avoid infinite recursion
+          return !filePath.includes('/node_modules/node_modules/');
+        })
+        .crawl(dir);
 
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
+      const files = await crawler.withPromise();
 
-        // Handle symlinks
-        if (entry.isSymbolicLink()) {
+      for (const filePath of files) {
+        // Handle package.json files
+        if (filePath.endsWith('/package.json')) {
           try {
-            const realPath = await fs.realpath(fullPath);
-            logger.debug('Found symlink:', fullPath, '->', realPath);
-            // If the real path is a package, process it
-            const pkgJsonPath = path.join(realPath, 'package.json');
-            try {
-              const pkgJson = JSON.parse(
-                await fs.readFile(pkgJsonPath, 'utf-8')
-              );
-              if (!seenPackages.has(pkgJson.name)) {
-                seenPackages.add(pkgJson.name);
-                logger.debug('Detected package (symlink):', pkgJson.name, 'at', realPath);
-                callbacks.onPackage(pkgJson);
-              } else {
-                logger.debug('Already seen package (symlink):', pkgJson.name, 'at', realPath);
-              }
-            } catch {
-              // Not a package or can't read package.json, continue
-            }
-            // Only follow symlinks that point to node_modules
-            if (realPath.includes('node_modules')) {
-              logger.debug('Following symlink to:', realPath);
-              await this.walkNodeModules(realPath, callbacks, seenPackages);
-            }
-          } catch {
-            logger.debug('Error resolving symlink:', fullPath);
-          }
-          continue;
-        }
-
-        if (entry.isDirectory()) {
-          // Check if this is a package directory
-          const pkgJsonPath = path.join(fullPath, 'package.json');
-          try {
-            const pkgJson = JSON.parse(await fs.readFile(pkgJsonPath, 'utf-8'));
-            // Only process each package once
+            const pkgJson = JSON.parse(await fs.readFile(filePath, 'utf-8'));
             if (!seenPackages.has(pkgJson.name)) {
               seenPackages.add(pkgJson.name);
-              logger.debug('Detected package:', pkgJson.name, 'at', fullPath);
+              logger.debug('Detected package:', pkgJson.name, 'at', filePath);
               callbacks.onPackage(pkgJson);
             } else {
-              logger.debug('Already seen package:', pkgJson.name, 'at', fullPath);
+              logger.debug('Already seen package:', pkgJson.name, 'at', filePath);
             }
           } catch {
-            // Not a package or can't read package.json, continue walking
-          }
-
-          // Continue walking if it's not node_modules
-          if (entry.name !== 'node_modules') {
-            await this.walkNodeModules(fullPath, callbacks, seenPackages);
+            logger.debug('Error reading package.json:', filePath);
           }
         } else {
-          callbacks.onFile(fullPath);
+          // Handle regular files
+          callbacks.onFile(filePath);
         }
       }
-    } catch {
-      logger.debug('Error walking directory:', dir);
+    } catch (error) {
+      logger.debug('Error walking directory:', dir, error);
     }
   }
 }
