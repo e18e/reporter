@@ -124,7 +124,7 @@ const defaultCommand = define({
     }
 
     // Then analyze the tarball
-    const {dependencies} = await report({root, pack});
+    const {dependencies, messages} = await report({root, pack});
 
     // Show files in tarball as debug output
     if (Array.isArray(dependencies.tarballFiles)) {
@@ -161,13 +161,40 @@ const defaultCommand = define({
     );
 
     prompts.log.info('Package report');
-    prompts.log.message(
-      c.yellowBright(
-        'This is a preview of the package report. The full report will be available soon.'
-      ),
-      {spacing: 1}
-    );
+    prompts.log.message('', {spacing: 0});
+    // Display tool analysis results
+    if (messages.length > 0) {
+      const errorMessages = messages.filter(m => m.severity === 'error');
+      const warningMessages = messages.filter(m => m.severity === 'warning');
+      const suggestionMessages = messages.filter(m => m.severity === 'suggestion');
 
+      // Display errors
+      if (errorMessages.length > 0) {
+        prompts.log.message(c.red('Errors:'), {spacing: 0});
+        for (const msg of errorMessages) {
+          prompts.log.message(`  ${c.red('•')} ${msg.message}`, {spacing: 0});
+        }
+        prompts.log.message('', {spacing: 0});
+      }
+
+      // Display warnings
+      if (warningMessages.length > 0) {
+        prompts.log.message(c.yellow('Warnings:'), {spacing: 0});
+        for (const msg of warningMessages) {
+          prompts.log.message(`  ${c.yellow('•')} ${msg.message}`, {spacing: 0});
+        }
+        prompts.log.message('', {spacing: 0});
+      }
+
+      // Display suggestions
+      if (suggestionMessages.length > 0) {
+        prompts.log.message(c.blue('Suggestions:'), {spacing: 0});
+        for (const msg of suggestionMessages) {
+          prompts.log.message(`  ${c.blue('•')} ${msg.message}`, {spacing: 0});
+        }
+        prompts.log.message('', {spacing: 0});
+      }
+    }
     prompts.outro('Report generated successfully!');
   }
 });
