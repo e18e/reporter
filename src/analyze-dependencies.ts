@@ -121,10 +121,6 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
       const crawler = new fdir()
         .withFullPaths()
         .withSymlinks()
-        .filter((filePath) => {
-          // Skip node_modules directories to avoid infinite recursion
-          return !filePath.includes('/node_modules/node_modules/');
-        })
         .crawl(dir);
 
       const files = await crawler.withPromise();
