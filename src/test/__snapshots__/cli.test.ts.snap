@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CLI > should display package report 1`] = `
+"Generate a performance report for your package. (e18e-report v0.0.1)
+
+┌  Generating report...
+│
+●  Tarball Analysis
+│  Total deps      1
+│  Direct deps     1
+│  Dev deps        0
+│  CJS deps        N/A
+│  ESM deps        N/A
+│  Install size    170.0 B
+│
+│  Dependency type analysis is only available for local analysis, as tarballs do not include dependencies.
+│
+●  Package report
+│
+│  Suggestions:
+│    • No type definitions found.
+│
+│
+└  Report generated successfully!
+
+"
+`;
+
+exports[`CLI > should display package report 2`] = `""`;
