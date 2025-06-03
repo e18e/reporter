@@ -4,7 +4,7 @@ import {cli, define} from 'gunshi';
 import * as prompts from '@clack/prompts';
 import c from 'picocolors';
 import {report} from './index.js';
-import type {PackType} from './types.js';
+import type {PackType, DuplicateDependency} from './types.js';
 import {LocalDependencyAnalyzer} from './analyze-dependencies.js';
 import { pino } from 'pino';
 
@@ -167,6 +167,22 @@ const defaultCommand = define({
       ),
       {spacing: 1}
     );
+
+    // Display duplicate dependency warnings
+    if (dependencies.duplicateDependencies && dependencies.duplicateDependencies.length > 0) {
+      prompts.log.warn('Duplicate Dependencies');
+      dependencies.duplicateDependencies.forEach((dup: DuplicateDependency) => {
+        prompts.log.message(`Package: ${dup.name}`);
+        prompts.log.message(`Versions: ${dup.versions.join(', ')}`);
+        prompts.log.message(`Locations: ${dup.locations.join(', ')}`);
+        if (dup.suggestedFix) {
+          prompts.log.message(`Suggested Fix: ${dup.suggestedFix.reason}`);
+        }
+        prompts.log.message('', {spacing: 1});
+      });
+    } else {
+      prompts.log.message(c.green('No duplicated dependencies were found.'));
+    }
 
     prompts.outro('Report generated successfully!');
   }

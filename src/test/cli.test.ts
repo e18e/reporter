@@ -3,6 +3,8 @@ import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import {createTempDir, cleanupTempDir, createTestPackage} from './utils.js';
+import { generateReportOutput } from './utils.js';
+import { mockStatsWithDuplicates, mockStatsWithoutDuplicates } from './fixtures/duplicate-deps.js';
 
 let mockTarballPath: string;
 let tempDir: string;
@@ -90,5 +92,20 @@ describe('CLI', () => {
     }
     expect(code).toBe(0);
     expect(stdout).toContain('Files in tarball:');
+  });
+});
+
+describe('CLI Output', () => {
+  it('should display duplicate dependency warnings when duplicates are found', () => {
+    const output = generateReportOutput(mockStatsWithDuplicates);
+    expect(output).toContain('Duplicate Dependencies');
+    expect(output).toContain('Package: test-package');
+    expect(output).toContain('Versions: 1.0.0, 2.0.0');
+    expect(output).toContain('  - Upgrading to version 2.0.0 would resolve duplicate dependencies');
+  });
+
+  it('should display "No duplicated dependencies were found" when no duplicates are found', () => {
+    const output = generateReportOutput(mockStatsWithoutDuplicates);
+    expect(output).toContain('No duplicated dependencies were found.');
   });
 }); 

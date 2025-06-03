@@ -38,7 +38,8 @@ describe('LocalDependencyAnalyzer', () => {
       esmDependencies: 0,
       installSize: 0,
       packageName: 'test-package',
-      version: '1.0.0'
+      version: '1.0.0',
+      duplicateDependencies: []
     });
   });
 
@@ -90,7 +91,8 @@ describe('LocalDependencyAnalyzer', () => {
       esmDependencies: 1, // esm-package
       installSize: expect.any(Number),
       packageName: 'test-package',
-      version: '1.0.0'
+      version: '1.0.0',
+      duplicateDependencies: []
     });
   });
 
@@ -133,7 +135,8 @@ describe('LocalDependencyAnalyzer', () => {
       esmDependencies: 1,
       installSize: expect.any(Number),
       packageName: 'test-package',
-      version: '1.0.0'
+      version: '1.0.0',
+      duplicateDependencies: []
     });
   });
 
@@ -155,7 +158,8 @@ describe('LocalDependencyAnalyzer', () => {
       esmDependencies: 0,
       installSize: 0,
       packageName: 'test-package',
-      version: '1.0.0'
+      version: '1.0.0',
+      duplicateDependencies: []
     });
   });
 });
