@@ -6,6 +6,7 @@ import {analyzePackageModuleType} from './compute-type.js';
 import { pino } from 'pino';
 import type {DependencyStats, DependencyAnalyzer} from './types.js';
 import { fdir } from 'fdir';
+import { analyzeDuplicateDependencies } from './analyze-duplicates.js';
 
 // Create a logger instance with pretty printing for development
 const logger = pino({
@@ -37,8 +38,11 @@ const logger = pino({
 export type { DependencyStats, DependencyAnalyzer };
 
 export class LocalDependencyAnalyzer implements DependencyAnalyzer {
+  private packageVersions: Map<string, Set<{version: string; location: string}>> = new Map();
+
   async analyzeDependencies(root: string): Promise<DependencyStats> {
     try {
+      this.packageVersions.clear();
       const pkgJsonPath = path.join(root, 'package.json');
       logger.debug('Reading package.json from:', pkgJsonPath);
 
@@ -64,9 +68,20 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
         logger.debug('Found node_modules directory');
 
         await this.walkNodeModules(nodeModulesPath, {
-          onPackage: (pkgJson) => {
+          onPackage: (pkgJson, filePath) => {
             const type = analyzePackageModuleType(pkgJson);
             logger.debug(`Package ${pkgJson.name}: ${type} (type=${pkgJson.type}, main=${pkgJson.main}, exports=${JSON.stringify(pkgJson.exports)})`);
+
+            // Track package versions
+            if (typeof pkgJson.version === 'string') {
+              if (!this.packageVersions.has(pkgJson.name)) {
+                this.packageVersions.set(pkgJson.name, new Set());
+              }
+              this.packageVersions.get(pkgJson.name)?.add({
+                version: pkgJson.version,
+                location: filePath
+              });
+            }
 
             if (type === 'cjs') cjsDependencies++;
             if (type === 'esm') esmDependencies++;
@@ -88,10 +103,14 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
         logger.debug('No node_modules directory found');
       }
 
+      // Analyze duplicate dependencies
+      const duplicateDependencies = await analyzeDuplicateDependencies(this.packageVersions);
+
       logger.debug('Analysis complete:');
       logger.debug('- CJS dependencies:', cjsDependencies);
       logger.debug('- ESM dependencies:', esmDependencies);
       logger.debug('- Install size:', installSize, 'bytes');
+      logger.debug('- Duplicate dependencies:', duplicateDependencies.length);
 
       return {
         totalDependencies: directDependencies + devDependencies,
@@ -101,7 +120,8 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
         esmDependencies,
         installSize,
         packageName: pkgJson.name,
-        version: pkgJson.version
+        version: pkgJson.version,
+        duplicateDependencies
       };
     } catch (error) {
       logger.error('Error analyzing dependencies:', error);
@@ -112,7 +132,7 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
   private async walkNodeModules(
     dir: string,
     callbacks: {
-      onPackage: (pkgJson: any) => void;
+      onPackage: (pkgJson: any, filePath: string) => void;
       onFile: (filePath: string) => void;
     },
     seenPackages = new Set<string>()
@@ -133,9 +153,10 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
             if (!seenPackages.has(pkgJson.name)) {
               seenPackages.add(pkgJson.name);
               logger.debug('Detected package:', pkgJson.name, 'at', filePath);
-              callbacks.onPackage(pkgJson);
+              callbacks.onPackage(pkgJson, filePath);
             } else {
               logger.debug('Already seen package:', pkgJson.name, 'at', filePath);
+              callbacks.onPackage(pkgJson, filePath);
             }
           } catch {
             logger.debug('Error reading package.json:', filePath);
