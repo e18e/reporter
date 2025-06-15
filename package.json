@@ -56,12 +56,14 @@
     "@clack/prompts": "https://pkg.pr.new/bombshell-dev/clack/@clack/prompts@276",
     "@publint/pack": "^0.1.2",
     "fdir": "^6.4.5",
-    "gunshi": "^0.14.3",
+    "gunshi": "^0.26.3",
+    "module-replacements-codemods": "^1.1.0",
     "package-manager-detector": "^1.1.0",
     "picocolors": "^1.1.1",
     "pino": "^9.7.0",
     "pino-pretty": "^13.0.0",
-    "publint": "^0.3.9"
+    "publint": "^0.3.9",
+    "tinyglobby": "^0.2.14"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

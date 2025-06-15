@@ -23,7 +23,10 @@ beforeAll(async () => {
   });
 
   // Create a simple index.js file
-  await fs.writeFile(path.join(tempDir, 'index.js'), 'console.log("Hello, world!");');
+  await fs.writeFile(
+    path.join(tempDir, 'index.js'),
+    'console.log("Hello, world!");'
+  );
 
   // Create node_modules with a dependency
   const nodeModules = path.join(tempDir, 'node_modules');
@@ -59,10 +62,16 @@ afterAll(async () => {
   await cleanupTempDir(tempDir);
 });
 
-function runCliProcess(args: string[], cwd?: string): Promise<{stdout: string; stderr: string; code: number | null}> {
+function runCliProcess(
+  args: string[],
+  cwd?: string
+): Promise<{stdout: string; stderr: string; code: number | null}> {
   return new Promise((resolve) => {
     const cliPath = path.resolve(__dirname, '../../lib/cli.js');
-    const proc = spawn('node', [cliPath, ...args], {env: process.env, cwd: cwd || process.cwd()});
+    const proc = spawn('node', [cliPath, ...args], {
+      env: process.env,
+      cwd: cwd || process.cwd()
+    });
     let stdout = '';
     let stderr = '';
     proc.stdout.on('data', (data) => (stdout += data.toString()));
@@ -73,7 +82,10 @@ function runCliProcess(args: string[], cwd?: string): Promise<{stdout: string; s
 
 describe('CLI', () => {
   it('should run successfully with default options', async () => {
-    const {stdout, stderr, code} = await runCliProcess([mockTarballPath], tempDir);
+    const {stdout, stderr, code} = await runCliProcess(
+      [mockTarballPath],
+      tempDir
+    );
     if (code !== 0) {
       console.error('CLI Error:', stderr);
     }
@@ -84,7 +96,10 @@ describe('CLI', () => {
   });
 
   it('should show tarball files when --log-level=debug is used', async () => {
-    const {stdout, stderr, code} = await runCliProcess([mockTarballPath, '--log-level=debug'], tempDir);
+    const {stdout, stderr, code} = await runCliProcess(
+      [mockTarballPath, '--log-level=debug'],
+      tempDir
+    );
     if (code !== 0) {
       console.error('CLI Error:', stderr);
     }
@@ -93,9 +108,12 @@ describe('CLI', () => {
   });
 
   it('should display package report', async () => {
-    const {stdout, stderr, code} = await runCliProcess([mockTarballPath], tempDir);
+    const {stdout, stderr, code} = await runCliProcess(
+      [mockTarballPath],
+      tempDir
+    );
     expect(code).toBe(0);
     expect(stdout).toMatchSnapshot();
     expect(stderr).toMatchSnapshot();
   });
-}); 
+});
