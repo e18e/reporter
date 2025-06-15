@@ -3,9 +3,9 @@ import fsSync from 'node:fs';
 import path from 'node:path';
 import {unpack} from '@publint/pack';
 import {analyzePackageModuleType} from './compute-type.js';
-import { pino } from 'pino';
+import {pino} from 'pino';
 import type {DependencyStats, DependencyAnalyzer} from './types.js';
-import { fdir } from 'fdir';
+import {fdir} from 'fdir';
 
 // Create a logger instance with pretty printing for development
 const logger = pino({
@@ -14,19 +14,19 @@ const logger = pino({
     options: {
       colorize: true,
       translateTime: 'SYS:standard',
-      ignore: 'pid,hostname',
-    },
-  },
+      ignore: 'pid,hostname'
+    }
+  }
 });
 
 /**
  * This file contains dependency analysis functionality.
- * 
+ *
  * To enable debug logging for dependency analysis:
  * ```typescript
  * // Enable all debug logs
  * logger.level = 'debug';
- * 
+ *
  * // Or create a specific logger for dependency analysis
  * const analyzerLogger = logger.child({ module: 'analyzer' });
  * analyzerLogger.level = 'debug';
@@ -34,7 +34,7 @@ const logger = pino({
  */
 
 // Re-export types
-export type { DependencyStats, DependencyAnalyzer };
+export type {DependencyStats, DependencyAnalyzer};
 
 export class LocalDependencyAnalyzer implements DependencyAnalyzer {
   async analyzeDependencies(root: string): Promise<DependencyStats> {
@@ -66,7 +66,9 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
         await this.walkNodeModules(nodeModulesPath, {
           onPackage: (pkgJson) => {
             const type = analyzePackageModuleType(pkgJson);
-            logger.debug(`Package ${pkgJson.name}: ${type} (type=${pkgJson.type}, main=${pkgJson.main}, exports=${JSON.stringify(pkgJson.exports)})`);
+            logger.debug(
+              `Package ${pkgJson.name}: ${type} (type=${pkgJson.type}, main=${pkgJson.main}, exports=${JSON.stringify(pkgJson.exports)})`
+            );
 
             if (type === 'cjs') cjsDependencies++;
             if (type === 'esm') esmDependencies++;
@@ -118,10 +120,7 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
     seenPackages = new Set<string>()
   ) {
     try {
-      const crawler = new fdir()
-        .withFullPaths()
-        .withSymlinks()
-        .crawl(dir);
+      const crawler = new fdir().withFullPaths().withSymlinks().crawl(dir);
 
       const files = await crawler.withPromise();
 
@@ -135,7 +134,12 @@ export class LocalDependencyAnalyzer implements DependencyAnalyzer {
               logger.debug('Detected package:', pkgJson.name, 'at', filePath);
               callbacks.onPackage(pkgJson);
             } else {
-              logger.debug('Already seen package:', pkgJson.name, 'at', filePath);
+              logger.debug(
+                'Already seen package:',
+                pkgJson.name,
+                'at',
+                filePath
+              );
             }
           } catch {
             logger.debug('Error reading package.json:', filePath);
