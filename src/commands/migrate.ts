@@ -2,24 +2,10 @@ import {type CommandContext} from 'gunshi';
 import * as prompts from '@clack/prompts';
 import colors from 'picocolors';
 import {meta} from './migrate.meta.js';
-import {codemods} from 'module-replacements-codemods';
 import {glob} from 'tinyglobby';
 import {readFile, writeFile} from 'node:fs/promises';
-
-interface Replacement {
-  from: string;
-  to: string;
-  condition?: (filename: string, source: string) => Promise<boolean>;
-  factory: (typeof codemods)[keyof typeof codemods];
-}
-
-const fixableReplacements: Replacement[] = [
-  {
-    from: 'chalk',
-    to: 'picocolors',
-    factory: codemods.chalk
-  }
-];
+import { fixableReplacements } from './fixable-replacements.js';
+import type { Replacement } from '../types.js';
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, ...targetModules] = ctx.positionals;
@@ -81,12 +67,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
       log.message(`migrating ${replacement.from} to ${replacement.to}`);
       // TODO (43081j): create the factory once and re-use it
-      const result = await replacement.factory({}).transform({
-        file: {
-          filename,
-          source
-        }
-      });
+      const result = await replacement.factory.transform({ file: { source, filename } });
       log.message(`writing ${filename}`);
       if (!dryRun) {
         await writeFile(filename, result, 'utf8');

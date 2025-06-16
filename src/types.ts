@@ -37,3 +37,13 @@ export interface DependencyStats {
 export interface DependencyAnalyzer {
   analyzeDependencies(root?: string): Promise<DependencyStats>;
 }
+
+export interface Replacement {
+  from: string;
+  to: string;
+  condition?: (filename: string, source: string) => Promise<boolean>;
+  factory: {
+    name: string;
+    transform: (options: { file: { source: string; filename: string } }) => string | Promise<string>;
+  };
+}
