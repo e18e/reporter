@@ -1,3 +1,3 @@
-import pc from 'picocolors';
+import chalk from 'chalk';
 
-console.log(pc.cyan('I am _so_ cyan'));
+console.log(chalk.cyan('I am _so_ cyan'));
