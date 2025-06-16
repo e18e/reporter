@@ -33,7 +33,7 @@
     "format": "prettier --write src",
     "test": "vitest run --coverage",
     "prepublishOnly": "npm run test",
-    "generate-fixable-replacements": "tsx src/scripts/generate-fixable-replacements.ts"
+    "generate-fixable-replacements": "node --import tsx src/scripts/generate-fixable-replacements.ts"
   },
   "repository": {
     "type": "git",
@@ -74,7 +74,6 @@
     "eslint": "^9.22.0",
     "premove": "^4.0.0",
     "prettier": "^3.5.3",
-    "tsx": "^4.20.3",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1",
     "vitest": "^3.0.9"
