@@ -1,11 +1,23 @@
 import {type CommandContext} from 'gunshi';
 import * as prompts from '@clack/prompts';
 import {meta} from './migrate.meta.js';
-import {Codemod, codemods} from 'module-replacements-codemods';
+import {codemods} from 'module-replacements-codemods';
 import {glob} from 'tinyglobby';
 import {readFile, writeFile} from 'node:fs/promises';
 
-const allowedPackages = Object.keys(codemods);
+interface Replacement {
+  from: string;
+  to: string;
+  factory: (typeof codemods)[keyof typeof codemods];
+}
+
+const fixableReplacements: Replacement[] = [
+  {
+    from: 'chalk',
+    to: 'picocolors',
+    factory: codemods.chalk
+  }
+];
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, ...targetModules] = ctx.positionals;
@@ -20,17 +32,20 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     return;
   }
 
-  const factories = new Map<string, Codemod>();
+  const selectedReplacements: Replacement[] = [];
 
   for (const targetModule of targetModules) {
-    if (!allowedPackages.includes(targetModule)) {
+    const replacement = fixableReplacements.find(
+      (rep) => rep.from === targetModule
+    );
+    if (!replacement) {
       prompts.cancel(
-        `Error: Unknown target package specified: ${targetModule}.`
+        `Error: Target package has no available migrations (${targetModule})`
       );
       return;
     }
 
-    factories.set(targetModule, codemods[targetModule]({}));
+    selectedReplacements.push(replacement);
   }
 
   const cwd = ctx.env.cwd ?? process.cwd();
@@ -42,17 +57,17 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     absolute: true
   });
 
-  for (const [targetModule, codemod] of factories) {
+  for (const replacement of selectedReplacements) {
     const log = prompts.taskLog({
-      // TODO (43081j): how do we know what we're migrating to?
-      title: `Migrating from ${targetModule} to ???...`,
+      title: `Migrating from ${replacement.from} to ${replacement.to}...`,
       limit: 5
     });
     for (const filename of files) {
       log.message(`Loading file ${filename}`);
       const source = await readFile(filename, 'utf8');
       log.message(`Transforming file ${filename}`);
-      const result = await codemod.transform({
+      // TODO (43081j): create the factory once and re-use it
+      const result = await replacement.factory({}).transform({
         file: {
           filename,
           source
@@ -63,8 +78,9 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
         await writeFile(filename, result, 'utf8');
       }
     }
-    // TODO (43081j): how do we know what we're migrating to?
-    log.success(`Migrated from ${targetModule} to ??? successfully.`);
+    log.success(
+      `Migrated from ${replacement.from} to ${replacement.to} successfully.`
+    );
   }
 
   prompts.outro('All packages migrated!');
