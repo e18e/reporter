@@ -1,5 +1,6 @@
 import {type CommandContext} from 'gunshi';
 import * as prompts from '@clack/prompts';
+import colors from 'picocolors';
 import {meta} from './migrate.meta.js';
 import {codemods} from 'module-replacements-codemods';
 import {glob} from 'tinyglobby';
@@ -8,6 +9,7 @@ import {readFile, writeFile} from 'node:fs/promises';
 interface Replacement {
   from: string;
   to: string;
+  condition?: (filename: string, source: string) => Promise<boolean>;
   factory: (typeof codemods)[keyof typeof codemods];
 }
 
@@ -50,22 +52,34 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   const cwd = ctx.env.cwd ?? process.cwd();
 
-  prompts.log.message(`Reading files from ${cwd}...`);
+  prompts.log.message(`Reading files from ${cwd}`);
 
   const files = await glob('**/*.ts', {
     cwd,
     absolute: true
   });
 
-  for (const replacement of selectedReplacements) {
+  for (const filename of files) {
     const log = prompts.taskLog({
-      title: `Migrating from ${replacement.from} to ${replacement.to}...`,
+      title: `${filename}...`,
       limit: 5
     });
-    for (const filename of files) {
-      log.message(`Loading file ${filename}`);
-      const source = await readFile(filename, 'utf8');
-      log.message(`Transforming file ${filename}`);
+
+    log.message(`loading ${filename}`);
+
+    const source = await readFile(filename, 'utf8');
+
+    let totalMigrations = 0;
+
+    for (const replacement of selectedReplacements) {
+      if (
+        replacement.condition !== undefined &&
+        (await replacement.condition(filename, source)) === false
+      ) {
+        continue;
+      }
+
+      log.message(`migrating ${replacement.from} to ${replacement.to}`);
       // TODO (43081j): create the factory once and re-use it
       const result = await replacement.factory({}).transform({
         file: {
@@ -73,15 +87,14 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
           source
         }
       });
-      log.message(`Writing file ${filename}`);
+      log.message(`writing ${filename}`);
       if (!dryRun) {
         await writeFile(filename, result, 'utf8');
       }
+      totalMigrations++;
     }
-    log.success(
-      `Migrated from ${replacement.from} to ${replacement.to} successfully.`
-    );
+    log.success(`${filename} ${colors.dim(`(${totalMigrations} migrated)`)}`);
   }
 
-  prompts.outro('All packages migrated!');
+  prompts.outro('Migration complete.');
 }
