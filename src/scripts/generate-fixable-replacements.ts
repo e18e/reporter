@@ -1,11 +1,11 @@
 import { writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { all } from 'module-replacements';
 import { codemods } from 'module-replacements-codemods';
 import { fixableReplacements } from '../commands/fixable-replacements.js';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function generateFixableReplacements() {
   const existingReplacements = new Map(
@@ -24,7 +24,7 @@ async function generateFixableReplacements() {
       newCode += `  {\n`;
       newCode += `    from: "${replacement.moduleName}",\n`;
       newCode += `    to: "${to}",\n`;
-      newCode += `    factory: codemods["${replacement.moduleName}"]({})\n`;
+      newCode += `    factory: codemods["${replacement.moduleName}"]\n`;
       newCode += `  },\n`;
     }
   }

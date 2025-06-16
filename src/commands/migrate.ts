@@ -66,8 +66,9 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
       }
 
       log.message(`migrating ${replacement.from} to ${replacement.to}`);
-      // TODO (43081j): create the factory once and re-use it
-      const result = await replacement.factory.transform({ file: { source, filename } });
+      // Instantiate the codemod only when needed
+      const codemod = replacement.factory({});
+      const result = await codemod.transform({ file: { source, filename } });
       log.message(`writing ${filename}`);
       if (!dryRun) {
         await writeFile(filename, result, 'utf8');

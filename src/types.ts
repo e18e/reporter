@@ -1,3 +1,5 @@
+import type { Codemod, CodemodOptions } from 'module-replacements-codemods';
+
 export interface PackFile {
   name: string;
   data: string | ArrayBuffer | Uint8Array;
@@ -42,8 +44,5 @@ export interface Replacement {
   from: string;
   to: string;
   condition?: (filename: string, source: string) => Promise<boolean>;
-  factory: {
-    name: string;
-    transform: (options: { file: { source: string; filename: string } }) => string | Promise<string>;
-  };
+  factory: (options: CodemodOptions) => Codemod;
 }

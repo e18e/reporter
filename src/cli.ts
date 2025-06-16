@@ -2,12 +2,23 @@ import {createRequire} from 'node:module';
 import {cli, define, lazy, LazyCommand} from 'gunshi';
 import * as prompts from '@clack/prompts';
 import c from 'picocolors';
+import {pino} from 'pino';
 import {meta as analyzeMeta} from './commands/analyze.meta.js';
 import {meta as migrateMeta} from './commands/migrate.meta.js';
 
 const version = createRequire(import.meta.url)('../package.json').version;
 
 // Create a logger instance with pretty printing for development
+export const logger = pino({
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'SYS:standard',
+      ignore: 'pid,hostname'
+    }
+  }
+});
 
 const defaultCommand = define({
   args: {},
