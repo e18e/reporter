@@ -21,7 +21,7 @@ const fixableReplacements: Replacement[] = [
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, ...targetModules] = ctx.positionals;
-  const dryRun = ctx.values['dry-run'] === false;
+  const dryRun = ctx.values['dry-run'] === true;
 
   prompts.intro(`Migrating packages...`);
 
