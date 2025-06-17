@@ -31,7 +31,7 @@
     "build": "npm run lint && npm run build:js",
     "lint": "eslint src",
     "format": "prettier --write src",
-    "test": "vitest run --coverage",
+    "test": "FORCE_COLOR=1 vitest run --coverage",
     "prepublishOnly": "npm run test"
   },
   "repository": {
