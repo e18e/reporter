@@ -41,8 +41,8 @@ const subCommands = new Map<string, LazyCommand<any>>([
 ]);
 
 cli(process.argv.slice(2), defaultCommand, {
-  name: 'e18e-report',
+  name: 'cli',
   version,
-  description: `${c.cyan('e18e CLI')}`,
+  description: `${c.cyan('e18e')}`,
   subCommands
 });

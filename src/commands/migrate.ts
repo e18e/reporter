@@ -89,6 +89,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   const files = await glob(include, {
     cwd,
+    ignore: ['node_modules'],
     absolute: true
   });
 
