@@ -1,5 +1,5 @@
 import {createRequire} from 'node:module';
-import {cli, define, lazy, LazyCommand} from 'gunshi';
+import {cli, define, lazy, type LazyCommand} from 'gunshi';
 import * as prompts from '@clack/prompts';
 import c from 'picocolors';
 import {meta as analyzeMeta} from './commands/analyze.meta.js';
