@@ -20,12 +20,38 @@ const fixableReplacements: Replacement[] = [
     factory: codemods.chalk
   }
 ];
+const fixableReplacementsTargets = new Set(
+  fixableReplacements.map((rep) => rep.from)
+);
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, ...targetModules] = ctx.positionals;
   const dryRun = ctx.values['dry-run'] === true;
+  const interactive = ctx.values.interactive === true;
 
   prompts.intro(`Migrating packages...`);
+
+  if (interactive) {
+    const additionalTargets = await prompts.multiselect({
+      message: 'Select packages to migrate',
+      options: [...fixableReplacementsTargets].map((target) => ({
+        value: target,
+        label: target
+      })),
+      initialValues: targetModules
+    });
+
+    if (prompts.isCancel(additionalTargets)) {
+      prompts.cancel('Migration cancelled.');
+      return;
+    }
+
+    for (const targetModule of additionalTargets) {
+      if (!targetModules.includes(targetModule)) {
+        targetModules.push(targetModule);
+      }
+    }
+  }
 
   if (targetModules.length === 0) {
     prompts.cancel(
@@ -50,9 +76,15 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     selectedReplacements.push(replacement);
   }
 
-  const cwd = ctx.env.cwd ?? process.cwd();
+  if (!interactive) {
+    const targetModuleSummary =
+      targetModules.length > 6
+        ? `${targetModules.slice(0, 6).join(', ')} and ${targetModules.length - 6} more`
+        : targetModules.join(', ');
+    prompts.log.message(`Targets: ${colors.dim(targetModuleSummary)}`);
+  }
 
-  prompts.log.message(`Reading files from ${cwd}`);
+  const cwd = ctx.env.cwd ?? process.cwd();
 
   const files = await glob('**/*.ts', {
     cwd,

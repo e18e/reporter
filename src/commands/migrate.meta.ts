@@ -6,6 +6,11 @@ export const meta = {
       type: 'boolean',
       default: false,
       description: `Don't apply any fixes, only show what would change.`
+    },
+    interactive: {
+      type: 'boolean',
+      default: false,
+      description: 'Run in interactive mode.'
     }
   }
 } as const;
