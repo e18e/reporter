@@ -6,9 +6,16 @@ export const meta = {
   args: {
     pack: {
       type: 'enum',
-      choices: ['auto', 'npm', 'yarn', 'pnpm', 'bun'] satisfies PackType[],
+      choices: [
+        'auto',
+        'npm',
+        'yarn',
+        'pnpm',
+        'bun',
+        'none'
+      ] satisfies PackType[],
       default: 'auto',
-      description: `Package manager to use for packing ('auto' | 'npm' | 'yarn' | 'pnpm' | 'bun')`
+      description: `Package manager to use for packing`
     },
     'log-level': {
       type: 'enum',
