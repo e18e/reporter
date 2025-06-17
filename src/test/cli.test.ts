@@ -83,7 +83,7 @@ function runCliProcess(
 describe('CLI', () => {
   it('should run successfully with default options', async () => {
     const {stdout, stderr, code} = await runCliProcess(
-      [mockTarballPath],
+      ['analyze', mockTarballPath],
       tempDir
     );
     if (code !== 0) {
@@ -97,7 +97,7 @@ describe('CLI', () => {
 
   it('should show tarball files when --log-level=debug is used', async () => {
     const {stdout, stderr, code} = await runCliProcess(
-      [mockTarballPath, '--log-level=debug'],
+      ['analyze', mockTarballPath, '--log-level=debug'],
       tempDir
     );
     if (code !== 0) {
@@ -109,7 +109,7 @@ describe('CLI', () => {
 
   it('should display package report', async () => {
     const {stdout, stderr, code} = await runCliProcess(
-      [mockTarballPath],
+      ['analyze', mockTarballPath],
       tempDir
     );
     expect(code).toBe(0);

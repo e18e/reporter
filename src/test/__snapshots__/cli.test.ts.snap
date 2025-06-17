@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`CLI > should display package report 1`] = `
-"Generate a performance report for your package. (e18e-report v0.0.1)
+"[36me18e CLI[39m (e18e-report v0.0.1)
 
 [90m┌[39m  Generating report...
 [90m│[39m
