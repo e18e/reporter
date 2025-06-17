@@ -14,7 +14,10 @@ const defaultCommand = define({
   async run() {
     prompts.intro('Please choose a command to run:');
     prompts.log.message(
-      `--analyze (${c.dim('analyzes the package for warnings/errors')})`
+      [
+        `--analyze (${c.dim('analyzes the package for warnings/errors')})`,
+        `--migrate (${c.dim('migrates packages to their suggested alternatives')})`
+      ].join('\n')
     );
     prompts.outro(
       'Use `<command> --help` to read more about a specific command'

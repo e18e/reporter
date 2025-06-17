@@ -93,7 +93,9 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   });
 
   if (files.length === 0) {
-    prompts.cancel(`No files found matching the pattern: ${colors.dim(include)}`);
+    prompts.cancel(
+      `No files found matching the pattern: ${colors.dim(include)}`
+    );
     return;
   }
 
