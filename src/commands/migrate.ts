@@ -28,6 +28,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, ...targetModules] = ctx.positionals;
   const dryRun = ctx.values['dry-run'] === true;
   const interactive = ctx.values.interactive === true;
+  const include = ctx.values.include;
 
   prompts.intro(`Migrating packages...`);
 
@@ -86,10 +87,15 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   const cwd = ctx.env.cwd ?? process.cwd();
 
-  const files = await glob('**/*.ts', {
+  const files = await glob(include, {
     cwd,
     absolute: true
   });
+
+  if (files.length === 0) {
+    prompts.cancel(`No files found matching the pattern: ${colors.dim(include)}`);
+    return;
+  }
 
   for (const filename of files) {
     const log = prompts.taskLog({

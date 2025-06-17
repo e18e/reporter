@@ -11,6 +11,11 @@ export const meta = {
       type: 'boolean',
       default: false,
       description: 'Run in interactive mode.'
+    },
+    include: {
+      type: 'string',
+      default: '**/*.{ts,js}',
+      description: 'Files to migrate'
     }
   }
 } as const;
