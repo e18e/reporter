@@ -70,6 +70,7 @@
     "@types/picomatch": "^4.0.0",
     "@vitest/coverage-v8": "^3.2.3",
     "eslint": "^9.22.0",
+    "pkg-pr-new": "^0.0.51",
     "premove": "^4.0.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2",
