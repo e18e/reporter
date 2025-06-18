@@ -9,13 +9,15 @@ import type {Message, Options} from './types.js';
 import {formatMessage} from 'publint/utils';
 import {detectAndPack} from '#detect-and-pack';
 import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
-import {unpack} from '@publint/pack';
 import {analyzePackageModuleType} from './compute-type.js';
 import type {PackageModuleType} from './compute-type.js';
 import {
   analyzeDependencies,
   type DependencyStats
 } from './analyze-dependencies.js';
+import {LocalFileSystem} from './local-file-system.js';
+import {TarballFileSystem} from './tarball-file-system.js';
+import type {FileSystem} from './file-system.js';
 
 export type {Message, Options, PackageModuleType};
 
@@ -32,37 +34,54 @@ export interface ReportResult {
 export async function report(options: Options) {
   const {root = process.cwd(), pack = 'auto'} = options ?? {};
 
-  let tarball: ArrayBuffer;
-  if (typeof pack === 'object') {
-    tarball = pack.tarball;
+  let fileSystem: FileSystem;
+  const messages: Message[] = [];
+
+  if (pack === 'none') {
+    fileSystem = new LocalFileSystem(root);
   } else {
-    tarball = await detectAndPack(root, pack);
+    let tarball: ArrayBuffer;
+
+    if (typeof pack === 'object') {
+      tarball = pack.tarball;
+    } else {
+      tarball = await detectAndPack(root, pack);
+    }
+
+    fileSystem = new TarballFileSystem(tarball);
+
+    const attwResult = await runAttw(tarball);
+    const publintResult = await runPublint(tarball);
+
+    for (const message of attwResult) {
+      messages.push(message);
+    }
+
+    for (const message of publintResult) {
+      messages.push(message);
+    }
   }
 
-  const info = await computeInfo(tarball);
-  const dependencies = await analyzeDependencies(tarball);
-  const attwResult = await runAttw(tarball);
-  const publintResult = await runPublint(tarball);
-
-  const messages = [...attwResult, ...publintResult];
+  const info = await computeInfo(fileSystem);
+  const dependencies = await analyzeDependencies(fileSystem);
 
   return {info, messages, dependencies};
 }
 
-async function computeInfo(tarball: ArrayBuffer) {
-  const {files, rootDir} = await unpack(tarball);
-  const decoder = new TextDecoder();
-  const pkgJson = files.find((f) => f.name === rootDir + '/package.json');
-  if (pkgJson === undefined) {
-    throw new Error('No package.json found in the tarball.');
-  }
+async function computeInfo(fileSystem: FileSystem) {
+  const rootDir = await fileSystem.getRootDir();
 
-  const pkg = JSON.parse(decoder.decode(pkgJson.data));
-  return {
-    name: pkg.name,
-    version: pkg.version,
-    type: analyzePackageModuleType(pkg)
-  };
+  try {
+    const pkgJson = await fileSystem.readFile(rootDir + '/package.json');
+    const pkg = JSON.parse(pkgJson);
+    return {
+      name: pkg.name,
+      version: pkg.version,
+      type: analyzePackageModuleType(pkg)
+    };
+  } catch {
+    throw new Error('No package.json found.');
+  }
 }
 
 async function runAttw(tarball: ArrayBuffer) {

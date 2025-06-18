@@ -90,21 +90,8 @@ describe('CLI', () => {
       console.error('CLI Error:', stderr);
     }
     expect(code).toBe(0);
-    // No local analysis for tarball input
-    // expect(stdout).toContain('Local Analysis');
-    expect(stdout).toContain('Tarball Analysis');
-  });
-
-  it('should show tarball files when --log-level=debug is used', async () => {
-    const {stdout, stderr, code} = await runCliProcess(
-      ['analyze', mockTarballPath, '--log-level=debug'],
-      tempDir
-    );
-    if (code !== 0) {
-      console.error('CLI Error:', stderr);
-    }
-    expect(code).toBe(0);
-    expect(stdout).toContain('Files in tarball:');
+    expect(stdout).toMatchSnapshot();
+    expect(stderr).toBe('');
   });
 
   it('should display package report', async () => {

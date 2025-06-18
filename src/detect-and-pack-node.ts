@@ -4,11 +4,9 @@ import path from 'node:path';
 import {pack as packAsTarball} from '@publint/pack';
 import type {Options} from './types.js';
 
-type ExtractStringLiteral<T> = T extends string ? T : never;
-
 export async function detectAndPack(
   root: string,
-  pack: ExtractStringLiteral<Options['pack']>
+  pack: Exclude<Extract<Options['pack'], string>, 'none'>
 ) {
   let packageManager = pack;
 

@@ -9,6 +9,7 @@ export type PackType =
   | 'yarn'
   | 'pnpm'
   | 'bun'
+  | 'none'
   | {tarball: ArrayBuffer};
 
 export interface Options {
@@ -29,11 +30,17 @@ export interface DependencyStats {
   cjsDependencies: number;
   esmDependencies: number;
   installSize: number;
-  tarballFiles?: string[];
   packageName?: string;
   version?: string;
 }
 
 export interface DependencyAnalyzer {
   analyzeDependencies(root?: string): Promise<DependencyStats>;
+}
+
+export interface PackageJsonLike {
+  name: string;
+  version: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
 }

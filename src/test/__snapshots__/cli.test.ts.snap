@@ -3,27 +3,49 @@
 exports[`CLI > should display package report 1`] = `
 "[36me18e[39m (cli v0.0.1)
 
-[90m┌[39m  Generating report...
+[90m┌[39m  Analyzing...
 [90m│[39m
-[34m●[39m  Tarball Analysis
+[34m●[39m  Summary
 [90m│[39m  [36mTotal deps    [39m  1
 [90m│[39m  [36mDirect deps   [39m  1
 [90m│[39m  [36mDev deps      [39m  0
-[90m│[39m  [36mCJS deps      [39m  N/A
-[90m│[39m  [36mESM deps      [39m  N/A
+[90m│[39m  [36mCJS deps      [39m  0
+[90m│[39m  [36mESM deps      [39m  0
 [90m│[39m  [36mInstall size  [39m  170.0 B
 [90m│[39m
-[90m│[39m  [93mDependency type analysis is only available for local analysis, as tarballs do not include dependencies.[39m
-[90m│[39m
-[34m●[39m  Package report
+[34m●[39m  Results:
 [90m│[39m
 [90m│[39m  [34mSuggestions:[39m
 [90m│[39m    [34m•[39m No type definitions found.
 [90m│[39m
 [90m│[39m
-[90m└[39m  Report generated successfully!
+[90m└[39m  Done!
 
 "
 `;
 
 exports[`CLI > should display package report 2`] = `""`;
+
+exports[`CLI > should run successfully with default options 1`] = `
+"[36me18e[39m (cli v0.0.1)
+
+[90m┌[39m  Analyzing...
+[90m│[39m
+[34m●[39m  Summary
+[90m│[39m  [36mTotal deps    [39m  1
+[90m│[39m  [36mDirect deps   [39m  1
+[90m│[39m  [36mDev deps      [39m  0
+[90m│[39m  [36mCJS deps      [39m  0
+[90m│[39m  [36mESM deps      [39m  0
+[90m│[39m  [36mInstall size  [39m  170.0 B
+[90m│[39m
+[34m●[39m  Results:
+[90m│[39m
+[90m│[39m  [34mSuggestions:[39m
+[90m│[39m    [34m•[39m No type definitions found.
+[90m│[39m
+[90m│[39m
+[90m└[39m  Done!
+
+"
+`;
