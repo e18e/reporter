@@ -1,4 +1,8 @@
-import type {DependencyNode, DuplicateDependency, PackageJsonLike} from './types.js';
+import type {
+  DependencyNode,
+  DuplicateDependency,
+  PackageJsonLike
+} from './types.js';
 import type {FileSystem} from './file-system.js';
 import {pino} from 'pino';
 
@@ -34,7 +38,7 @@ export class DependencyTreeBuilder {
     // Start with the root package
     const rootPackagePath = rootDir + '/package.json';
     const rootPackage = await this.parsePackageJson(rootPackagePath);
-    
+
     if (!rootPackage) {
       logger.warn('Could not parse root package.json');
       return [];
@@ -52,7 +56,9 @@ export class DependencyTreeBuilder {
     // Process all dependencies recursively
     await this.processDependencies(rootPackage, 'root', 1);
 
-    logger.debug(`Built dependency tree with ${this.dependencyNodes.length} nodes`);
+    logger.debug(
+      `Built dependency tree with ${this.dependencyNodes.length} nodes`
+    );
     return this.dependencyNodes;
   }
 
@@ -112,19 +118,21 @@ export class DependencyTreeBuilder {
    */
   private async findPackageJson(depName: string): Promise<string | null> {
     const packageFiles = await this.fileSystem.listPackageFiles();
-    
+
     // Look for exact match first
-    const exactMatch = packageFiles.find(file => 
+    const exactMatch = packageFiles.find((file) =>
       file.includes(`/node_modules/${depName}/package.json`)
     );
-    
+
     if (exactMatch) {
       return exactMatch;
     }
 
     // Look for scoped packages
-    const scopedMatch = packageFiles.find(file => 
-      file.includes(`/node_modules/@${depName.split('/')[0]}/${depName.split('/')[1]}/package.json`)
+    const scopedMatch = packageFiles.find((file) =>
+      file.includes(
+        `/node_modules/@${depName.split('/')[0]}/${depName.split('/')[1]}/package.json`
+      )
     );
 
     return scopedMatch || null;
@@ -133,7 +141,9 @@ export class DependencyTreeBuilder {
   /**
    * Parses a package.json file
    */
-  private async parsePackageJson(packagePath: string): Promise<PackageJsonLike | null> {
+  private async parsePackageJson(
+    packagePath: string
+  ): Promise<PackageJsonLike | null> {
     try {
       const content = await this.fileSystem.readFile(packagePath);
       return JSON.parse(content) as PackageJsonLike;
@@ -181,14 +191,14 @@ export const DuplicateDetector = {
     nodes: DependencyNode[]
   ): DuplicateDependency | null {
     // Skip root package
-    if (packageName === 'root' || nodes.some(n => n.name === 'root')) {
+    if (packageName === 'root' || nodes.some((n) => n.name === 'root')) {
       return null;
     }
 
-    const uniqueVersions = new Set(nodes.map(n => n.version));
-    
+    const uniqueVersions = new Set(nodes.map((n) => n.version));
+
     let severity: 'exact' | 'conflict' | 'resolvable';
-    
+
     if (uniqueVersions.size === 1) {
       severity = 'exact';
     } else {
@@ -218,19 +228,21 @@ export const DuplicateDetector = {
   /**
    * Generates suggestions for resolving duplicates
    */
-  generateSuggestions(
-    nodes: DependencyNode[]
-  ): string[] {
+  generateSuggestions(nodes: DependencyNode[]): string[] {
     const suggestions: string[] = [];
-    
+
     // Group by version to identify the most common version
     const versionCounts = new Map<string, number>();
     for (const node of nodes) {
-      versionCounts.set(node.version, (versionCounts.get(node.version) || 0) + 1);
+      versionCounts.set(
+        node.version,
+        (versionCounts.get(node.version) || 0) + 1
+      );
     }
 
-    const mostCommonVersion = Array.from(versionCounts.entries())
-      .sort((a, b) => b[1] - a[1])[0];
+    const mostCommonVersion = Array.from(versionCounts.entries()).sort(
+      (a, b) => b[1] - a[1]
+    )[0];
 
     if (mostCommonVersion && mostCommonVersion[1] > 1) {
       suggestions.push(
@@ -239,7 +251,7 @@ export const DuplicateDetector = {
     }
 
     // Suggest checking for newer versions of consuming packages
-    const uniqueParents = new Set(nodes.map(n => n.parent).filter(Boolean));
+    const uniqueParents = new Set(nodes.map((n) => n.parent).filter(Boolean));
     if (uniqueParents.size > 1) {
       suggestions.push(
         `Check if newer versions of consuming packages (${Array.from(uniqueParents).join(', ')}) would resolve this duplicate`
@@ -248,4 +260,4 @@ export const DuplicateDetector = {
 
     return suggestions;
   }
-}; 
+};

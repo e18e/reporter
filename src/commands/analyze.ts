@@ -112,16 +112,21 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   prompts.log.message('', {spacing: 0});
 
   // Display duplicate dependencies or a message if none found
-  if (dependencies.duplicateCount && dependencies.duplicateCount > 0 && dependencies.duplicateDependencies && dependencies.duplicateDependencies.length > 0) {
+  if (
+    dependencies.duplicateCount &&
+    dependencies.duplicateCount > 0 &&
+    dependencies.duplicateDependencies &&
+    dependencies.duplicateDependencies.length > 0
+  ) {
     prompts.log.message(c.yellow('Duplicate Dependencies:'), {spacing: 0});
     for (const duplicate of dependencies.duplicateDependencies) {
       const severityColor = duplicate.severity === 'exact' ? c.blue : c.yellow;
-      
+
       prompts.log.message(
         `  ${severityColor('•')} ${c.bold(duplicate.name)} (${duplicate.versions.length} versions)`,
         {spacing: 0}
       );
-      
+
       // Show version details
       for (const version of duplicate.versions) {
         prompts.log.message(
@@ -129,21 +134,22 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
           {spacing: 0}
         );
       }
-      
+
       // Show suggestions
       if (duplicate.suggestions && duplicate.suggestions.length > 0) {
         for (const suggestion of duplicate.suggestions) {
-          prompts.log.message(
-            `    ${c.blue('💡')} ${c.gray(suggestion)}`,
-            {spacing: 0}
-          );
+          prompts.log.message(`    ${c.blue('💡')} ${c.gray(suggestion)}`, {
+            spacing: 0
+          });
         }
       }
-      
+
       prompts.log.message('', {spacing: 0});
     }
   } else {
-    prompts.log.message(c.green('✅ No duplicated dependencies found.'), {spacing: 0});
+    prompts.log.message(c.green('✅ No duplicated dependencies found.'), {
+      spacing: 0
+    });
     prompts.log.message('', {spacing: 0});
   }
 

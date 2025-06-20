@@ -80,16 +80,19 @@ export async function report(options: Options) {
 function generateDuplicateMessages(dependencies: DependencyStats): Message[] {
   const messages: Message[] = [];
 
-  if (!dependencies.duplicateDependencies || dependencies.duplicateDependencies.length === 0) {
+  if (
+    !dependencies.duplicateDependencies ||
+    dependencies.duplicateDependencies.length === 0
+  ) {
     return messages;
   }
 
   for (const duplicate of dependencies.duplicateDependencies) {
     const severity = duplicate.severity === 'exact' ? 'warning' : 'warning';
     const score = duplicate.severity === 'exact' ? 0.3 : 0.5; // Higher score for conflicts
-    
+
     let message = `Duplicate dependency: ${duplicate.name} (${duplicate.versions.length} versions)`;
-    
+
     if (duplicate.severity === 'exact') {
       message += ' - Exact duplicates found';
     } else {

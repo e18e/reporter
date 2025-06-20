@@ -23,7 +23,8 @@ describe('analyzeDependencies (tarball)', () => {
     expect(result).toHaveProperty('duplicateCount', expect.any(Number));
     if ('duplicateDependencies' in result) {
       expect(
-        Array.isArray(result.duplicateDependencies) || result.duplicateDependencies === undefined
+        Array.isArray(result.duplicateDependencies) ||
+          result.duplicateDependencies === undefined
       ).toBe(true);
     }
   });

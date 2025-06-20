@@ -93,7 +93,8 @@ export async function analyzeDependencies(
   // Build dependency tree and detect duplicates
   const treeBuilder = new DependencyTreeBuilder(fileSystem);
   const dependencyNodes = await treeBuilder.buildDependencyTree();
-  const duplicateDependencies = DuplicateDetector.detectDuplicates(dependencyNodes);
+  const duplicateDependencies =
+    DuplicateDetector.detectDuplicates(dependencyNodes);
 
   const result: DependencyStats = {
     totalDependencies: directDependencies + devDependencies,

@@ -40,8 +40,10 @@ async function generateFixableReplacements() {
     'fixable-replacements.ts'
   );
   await writeFile(outputPath, newCode);
-  
-  console.log(`✅ Generated fixable-replacements.ts with ${count} replacements`);
+
+  console.log(
+    `✅ Generated fixable-replacements.ts with ${count} replacements`
+  );
   console.log(`📁 Output: ${outputPath}`);
 }
 

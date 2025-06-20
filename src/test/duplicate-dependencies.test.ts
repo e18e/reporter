@@ -58,9 +58,13 @@ describe('Duplicate Dependency Detection', () => {
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
     const stats = await analyzeDependencies(fileSystem);
-    
+
     expect(stats.duplicateCount).toBe(1);
-    expect(Array.isArray(stats.duplicateDependencies) ? stats.duplicateDependencies.length : 0).toBe(1);
+    expect(
+      Array.isArray(stats.duplicateDependencies)
+        ? stats.duplicateDependencies.length
+        : 0
+    ).toBe(1);
     if (Array.isArray(stats.duplicateDependencies)) {
       expect(stats.duplicateDependencies[0]).toMatchObject({
         name: 'shared-lib',
@@ -119,7 +123,13 @@ describe('Duplicate Dependency Detection', () => {
     });
 
     // Create shared-lib v2.0.0 in a nested location
-    const sharedLibV2Dir = path.join(tempDir, 'node_modules', 'package-b', 'node_modules', 'shared-lib');
+    const sharedLibV2Dir = path.join(
+      tempDir,
+      'node_modules',
+      'package-b',
+      'node_modules',
+      'shared-lib'
+    );
     await fs.mkdir(path.dirname(sharedLibV2Dir), {recursive: true});
     await createTestPackage(sharedLibV2Dir, {
       name: 'shared-lib',
@@ -127,16 +137,22 @@ describe('Duplicate Dependency Detection', () => {
     });
 
     const stats = await analyzeDependencies(fileSystem);
-    
+
     expect(stats.duplicateCount).toBe(1);
-    expect(Array.isArray(stats.duplicateDependencies) ? stats.duplicateDependencies.length : 0).toBe(1);
+    expect(
+      Array.isArray(stats.duplicateDependencies)
+        ? stats.duplicateDependencies.length
+        : 0
+    ).toBe(1);
     if (Array.isArray(stats.duplicateDependencies)) {
       expect(stats.duplicateDependencies[0]).toMatchObject({
         name: 'shared-lib',
         severity: 'conflict'
       });
       // Should have both versions
-      const versions = stats.duplicateDependencies[0].versions.map(v => v.version);
+      const versions = stats.duplicateDependencies[0].versions.map(
+        (v) => v.version
+      );
       expect(versions).toContain('1.0.0');
       expect(versions).toContain('2.0.0');
     }
@@ -161,7 +177,7 @@ describe('Duplicate Dependency Detection', () => {
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
     const stats = await analyzeDependencies(fileSystem);
-    
+
     expect(stats.duplicateCount).toBe(0);
     expect(stats.duplicateDependencies).toBeUndefined();
   });
@@ -200,12 +216,22 @@ describe('Duplicate Dependency Detection', () => {
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
     const stats = await analyzeDependencies(fileSystem);
-    
+
     expect(stats.duplicateCount).toBe(1);
-    expect(Array.isArray(stats.duplicateDependencies) ? stats.duplicateDependencies.length : 0).toBe(1);
-    if (Array.isArray(stats.duplicateDependencies) && stats.duplicateDependencies.length > 0) {
+    expect(
+      Array.isArray(stats.duplicateDependencies)
+        ? stats.duplicateDependencies.length
+        : 0
+    ).toBe(1);
+    if (
+      Array.isArray(stats.duplicateDependencies) &&
+      stats.duplicateDependencies.length > 0
+    ) {
       expect(stats.duplicateDependencies[0].suggestions).toBeDefined();
-      expect(stats.duplicateDependencies[0].suggestions && stats.duplicateDependencies[0].suggestions.length).toBeGreaterThan(0);
+      expect(
+        stats.duplicateDependencies[0].suggestions &&
+          stats.duplicateDependencies[0].suggestions.length
+      ).toBeGreaterThan(0);
     }
   });
-}); 
+});
