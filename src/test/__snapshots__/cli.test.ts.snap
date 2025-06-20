@@ -15,6 +15,8 @@ exports[`CLI > should display package report 1`] = `
 [90m│[39m
 [34m●[39m  Results:
 [90m│[39m
+[90m│[39m  [32m✅ No duplicated dependencies found.[39m
+[90m│[39m
 [90m│[39m  [34mSuggestions:[39m
 [90m│[39m    [34m•[39m No type definitions found.
 [90m│[39m
@@ -40,6 +42,8 @@ exports[`CLI > should run successfully with default options 1`] = `
 [90m│[39m  [36mInstall size  [39m  170.0 B
 [90m│[39m
 [34m●[39m  Results:
+[90m│[39m
+[90m│[39m  [32m✅ No duplicated dependencies found.[39m
 [90m│[39m
 [90m│[39m  [34mSuggestions:[39m
 [90m│[39m    [34m•[39m No type definitions found.

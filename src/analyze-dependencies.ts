@@ -6,6 +6,7 @@ import type {
   PackageJsonLike
 } from './types.js';
 import {FileSystem} from './file-system.js';
+import {DependencyTreeBuilder, DuplicateDetector} from './dependency-tree.js';
 
 // Create a logger instance with pretty printing for development
 const logger = pino({
@@ -89,7 +90,12 @@ export async function analyzeDependencies(
     }
   }
 
-  return {
+  // Build dependency tree and detect duplicates
+  const treeBuilder = new DependencyTreeBuilder(fileSystem);
+  const dependencyNodes = await treeBuilder.buildDependencyTree();
+  const duplicateDependencies = DuplicateDetector.detectDuplicates(dependencyNodes);
+
+  const result: DependencyStats = {
     totalDependencies: directDependencies + devDependencies,
     directDependencies,
     devDependencies,
@@ -97,6 +103,14 @@ export async function analyzeDependencies(
     esmDependencies,
     installSize,
     packageName: pkg.name,
-    version: pkg.version
+    version: pkg.version,
+    duplicateCount: duplicateDependencies.length
   };
+
+  // Only add duplicateDependencies if there are duplicates
+  if (duplicateDependencies.length > 0) {
+    result.duplicateDependencies = duplicateDependencies;
+  }
+
+  return result;
 }
