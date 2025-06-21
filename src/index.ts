@@ -65,7 +65,59 @@ export async function report(options: Options) {
   const info = await computeInfo(fileSystem);
   const dependencies = await analyzeDependencies(fileSystem);
 
+  // Generate duplicate dependency warnings
+  const duplicateMessages = generateDuplicateMessages(dependencies);
+  for (const message of duplicateMessages) {
+    messages.push(message);
+  }
+
   return {info, messages, dependencies};
+}
+
+/**
+ * Generates warning messages for duplicate dependencies
+ */
+function generateDuplicateMessages(dependencies: DependencyStats): Message[] {
+  const messages: Message[] = [];
+
+  if (
+    !dependencies.duplicateDependencies ||
+    dependencies.duplicateDependencies.length === 0
+  ) {
+    return messages;
+  }
+
+  for (const duplicate of dependencies.duplicateDependencies) {
+    const severity = duplicate.severity === 'exact' ? 'warning' : 'warning';
+    const score = duplicate.severity === 'exact' ? 0.3 : 0.5; // Higher score for conflicts
+
+    let message = `Duplicate dependency: ${duplicate.name} (${duplicate.versions.length} versions)`;
+
+    if (duplicate.severity === 'exact') {
+      message += ' - Exact duplicates found';
+    } else {
+      message += ' - Version conflicts detected';
+    }
+
+    messages.push({
+      severity,
+      score,
+      message
+    });
+
+    // Add suggestion messages for each suggestion
+    if (duplicate.suggestions) {
+      for (const suggestion of duplicate.suggestions) {
+        messages.push({
+          severity: 'suggestion',
+          score: 0.2,
+          message: `${duplicate.name}: ${suggestion}`
+        });
+      }
+    }
+  }
+
+  return messages;
 }
 
 async function computeInfo(fileSystem: FileSystem) {
