@@ -1,3 +1,5 @@
+import {codemods} from 'module-replacements-codemods';
+
 export interface PackFile {
   name: string;
   data: string | ArrayBuffer | Uint8Array;
@@ -43,4 +45,11 @@ export interface PackageJsonLike {
   version: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+}
+
+export interface Replacement {
+  from: string;
+  to: string;
+  condition?: (filename: string, source: string) => Promise<boolean>;
+  factory: (typeof codemods)[keyof typeof codemods];
 }

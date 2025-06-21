@@ -2,24 +2,11 @@ import {type CommandContext} from 'gunshi';
 import * as prompts from '@clack/prompts';
 import colors from 'picocolors';
 import {meta} from './migrate.meta.js';
-import {codemods} from 'module-replacements-codemods';
 import {glob} from 'tinyglobby';
 import {readFile, writeFile} from 'node:fs/promises';
+import {fixableReplacements} from './fixable-replacements.js';
+import type {Replacement} from '../types.js';
 
-interface Replacement {
-  from: string;
-  to: string;
-  condition?: (filename: string, source: string) => Promise<boolean>;
-  factory: (typeof codemods)[keyof typeof codemods];
-}
-
-const fixableReplacements: Replacement[] = [
-  {
-    from: 'chalk',
-    to: 'picocolors',
-    factory: codemods.chalk
-  }
-];
 const fixableReplacementsTargets = new Set(
   fixableReplacements.map((rep) => rep.from)
 );
